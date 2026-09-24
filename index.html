@@ -1,0 +1,14 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="theme-color" content="#8b1746"><title>PU Syllabus Finder</title><link rel="stylesheet" href="style.css"></head><body>
+<header><a href="#" class="brand">📚 PU Syllabus Finder</a><button id="themeBtn">☾</button></header>
+<main>
+<section class="hero"><div>📖</div><small>PANJAB UNIVERSITY</small><h1>Find Your <span>PU Syllabus</span></h1><p>Choose course, semester, subject and category.</p></section>
+<section class="card">
+<label>1. Department / Course</label><select id="course"><option value="">Select course</option></select>
+<label>2. Semester</label><select id="semester" disabled><option value="">Select semester</option></select>
+<label>3. Subject</label><input id="subjectSearch" placeholder="Search subject..." disabled><select id="subject" size="5" disabled></select>
+<label>4. Category</label><select id="category" disabled><option value="">Select category</option></select>
+<p class="hint">Compulsory subjects may appear as AEC, HCP or Punjabi where applicable.</p>
+<button id="searchBtn" disabled>🔎 Search Syllabus</button></section>
+<div id="message" class="message hidden"></div><section id="resultSection" class="hidden"><article id="resultCard" class="card"></article></section>
+</main><footer>PU Syllabus Finder · Free student project<br><small>Verify the latest syllabus with the official Panjab University source.</small></footer>
+<script src="app.js"></script></body></html>
