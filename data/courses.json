@@ -1,0 +1,46 @@
+[
+  {
+    "id": "ba",
+    "name": "B.A.",
+    "categories": [
+      "dsc",
+      "mdc",
+      "sec",
+      "vac",
+      "compulsory"
+    ]
+  },
+  {
+    "id": "bsc",
+    "name": "B.Sc.",
+    "categories": [
+      "dsc",
+      "mdc",
+      "sec",
+      "vac",
+      "compulsory"
+    ]
+  },
+  {
+    "id": "bcom",
+    "name": "B.Com.",
+    "categories": [
+      "dsc",
+      "mdc",
+      "sec",
+      "vac",
+      "compulsory"
+    ]
+  },
+  {
+    "id": "bba",
+    "name": "BBA",
+    "categories": [
+      "dsc",
+      "mdc",
+      "sec",
+      "vac",
+      "compulsory"
+    ]
+  }
+]
