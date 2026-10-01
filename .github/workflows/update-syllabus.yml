@@ -32,41 +32,128 @@ jobs:
           mkdir -p data/source-pdfs
           mkdir -p data/syllabus/ba
 
-      - name: Download BA DSC Sem 1-2
+      - name: Download BA DSC PDFs
+        env:
+          PU_UA: "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 Chrome/140.0 Safari/537.36"
         run: |
-          curl -L \
+          set -e
+
+          download_pdf() {
+            URL="$1"
+            OUTPUT="$2"
+
+            echo ""
+            echo "=========================================="
+            echo "Downloading:"
+            echo "$OUTPUT"
+            echo "=========================================="
+
+            rm -f "$OUTPUT"
+
+            curl \
+              --fail \
+              --show-error \
+              --silent \
+              --location \
+              --retry 5 \
+              --retry-delay 5 \
+              --connect-timeout 30 \
+              --max-time 300 \
+              --user-agent "$PU_UA" \
+              --header "Accept: application/pdf,*/*" \
+              --header "Referer: https://puchd.ac.in/" \
+              "$URL" \
+              --output "$OUTPUT"
+
+            echo "Downloaded size:"
+            wc -c "$OUTPUT"
+
+            echo "File information:"
+            file "$OUTPUT"
+
+            echo "First 4 bytes:"
+            xxd -l 4 "$OUTPUT"
+
+            if [ "$(xxd -p -l 4 "$OUTPUT")" != "25504446" ]; then
+              echo ""
+              echo "ERROR: Downloaded file is NOT a PDF."
+              echo ""
+              echo "First 500 bytes of response:"
+              head -c 500 "$OUTPUT" || true
+              echo ""
+              exit 1
+            fi
+
+            SIZE=$(stat -c%s "$OUTPUT")
+
+            if [ "$SIZE" -lt 10000 ]; then
+              echo "ERROR: PDF is suspiciously small: $SIZE bytes"
+              exit 1
+            fi
+
+            echo "VALID PDF: $OUTPUT ($SIZE bytes)"
+          }
+
+          download_pdf \
             "https://puchd.ac.in/includes/syllabus/2026/20260702111502-b.a.b.a.hons.b.a.hons.withres.1.pdf?2026" \
-            -o data/source-pdfs/ba-dsc-sem-1-2.pdf
+            "data/source-pdfs/ba-dsc-sem-1-2.pdf"
 
-      - name: Download BA DSC Sem 3-4
-        run: |
-          curl -L \
+          download_pdf \
             "https://puchd.ac.in/includes/syllabus/2026/20260702111839-b.a.-b.ahons-b.a.honswithres.2.pdf?2026" \
-            -o data/source-pdfs/ba-dsc-sem-3-4.pdf
+            "data/source-pdfs/ba-dsc-sem-3-4.pdf"
 
-      - name: Download BA DSC Sem 5-6
-        run: |
-          curl -L \
+          download_pdf \
             "https://puchd.ac.in/includes/syllabus/2026/20260720161649-b.a.-b.ahons-b.a.honswithresearch.pdf?2026" \
-            -o data/source-pdfs/ba-dsc-sem-5-6.pdf
+            "data/source-pdfs/ba-dsc-sem-5-6.pdf"
 
-      - name: Download BA DSC Sem 7-8
-        run: |
-          curl -L \
+          download_pdf \
             "https://puchd.ac.in/includes/syllabus/2026/20260810121152-b.a.honswithres7th8thsem2026-27.pdf?2026" \
-            -o data/source-pdfs/ba-dsc-sem-7-8.pdf
+            "data/source-pdfs/ba-dsc-sem-7-8.pdf"
 
       - name: Verify downloaded PDFs
         run: |
+          echo "Downloaded source files:"
           ls -lh data/source-pdfs/
+
+          echo ""
+          echo "Checking PDFs..."
+
           python - <<'PY'
           from pathlib import Path
+          from pypdf import PdfReader
 
-          for p in Path("data/source-pdfs").glob("*.pdf"):
+          files = sorted(Path("data/source-pdfs").glob("*.pdf"))
+
+          if len(files) != 4:
+              raise SystemExit(
+                  f"Expected 4 PDFs, found {len(files)}"
+              )
+
+          for p in files:
               size = p.stat().st_size
-              print(f"{p}: {size:,} bytes")
+
+              print(f"\n{p}")
+              print(f"Size: {size:,} bytes")
+
               if size < 10_000:
-                  raise SystemExit(f"Downloaded file looks invalid: {p}")
+                  raise SystemExit(
+                      f"PDF is too small: {p}"
+                  )
+
+              with p.open("rb") as f:
+                  header = f.read(4)
+
+              if header != b"%PDF":
+                  raise SystemExit(
+                      f"Invalid PDF header: {p}"
+                  )
+
+              reader = PdfReader(str(p))
+
+              print(f"Pages: {len(reader.pages)}")
+              print("PDF verification: OK")
+
+          print("\nAll BA DSC PDFs are valid.")
           PY
 
       - name: Commit source PDFs if changed
