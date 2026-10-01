@@ -156,6 +156,36 @@ jobs:
           print("\nAll BA DSC PDFs are valid.")
           PY
 
+      - name: Extract BA DSC PDF text
+        run: |
+          python scripts/extract_ba_dsc.py
+
+      - name: Verify extracted data
+        run: |
+          ls -lh data/syllabus/ba/
+
+          python - <<'PY'
+          import json
+
+          path = "data/syllabus/ba/dsc.json"
+
+          with open(path, encoding="utf-8") as f:
+              data = json.load(f)
+
+          print("Documents:", len(data["documents"]))
+
+          for doc in data["documents"]:
+              pages = len(doc["pages"])
+              characters = sum(len(p["text"]) for p in doc["pages"])
+
+              print(
+                  f"{doc['source_file']}: "
+                  f"{pages} pages, "
+                  f"{characters:,} characters"
+              )
+
+          print("Extraction verification: OK")
+          PY
       - name: Commit source PDFs if changed
         run: |
           git config user.name "College Syllabus Buddy Bot"
